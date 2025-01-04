@@ -1,111 +1,80 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { useState } from 'react'
+import { Document, Page, pdfjs } from 'react-pdf'
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Download } from 'lucide-react'
 
 // Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
 
 interface PDFViewerProps {
-  url: string;
-  title: string;
-  allowDownload?: boolean;
+  url: string
+  title: string
 }
 
-export function PDFViewer({ url, title, allowDownload = true }: PDFViewerProps) {
-  const [numPages, setNumPages] = useState<number>(0);
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
+export function PDFViewer({ url, title }: PDFViewerProps) {
+  const [numPages, setNumPages] = useState<number>(0)
+  const [pageNumber, setPageNumber] = useState<number>(1)
+  const [isLoading, setIsLoading] = useState(true)
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages);
+    setNumPages(numPages)
+    setIsLoading(false)
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto border-[#00B0F0]/10">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-[#2D3748]">{title}</CardTitle>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setScale(scale => Math.max(0.5, scale - 0.1))}
-            className="border-[#00B0F0]/20 text-[#00B0F0] hover:bg-[#00B0F0]/5"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setScale(scale => Math.min(2, scale + 0.1))}
-            className="border-[#00B0F0]/20 text-[#00B0F0] hover:bg-[#00B0F0]/5"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          {allowDownload && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => window.open(url, '_blank')}
-              className="border-[#00B0F0]/20 text-[#00B0F0] hover:bg-[#00B0F0]/5"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="flex justify-center bg-[#F8FBFF] rounded-md p-4">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">{title}</h3>
+        <Button 
+          variant="outline" 
+          className="border-[#00B0F0] text-[#00B0F0] hover:bg-[#00B0F0]/5"
+          onClick={() => window.open(url, '_blank')}
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Download
+        </Button>
+      </div>
+      <div className="relative bg-muted rounded-lg border p-4">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00B0F0] border-t-transparent"></div>
+          </div>
+        )}
         <Document
           file={url}
           onLoadSuccess={onDocumentLoadSuccess}
-          loading={
-            <div className="flex items-center justify-center h-[600px]">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00B0F0]"></div>
-            </div>
-          }
+          className="flex justify-center"
         >
-          <Page
-            pageNumber={pageNumber}
-            scale={scale}
+          <Page 
+            pageNumber={pageNumber} 
             renderTextLayer={false}
-            renderAnnotationLayer={false}
+            className="max-w-full"
           />
         </Document>
-      </CardContent>
-      <CardFooter className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPageNumber(page => Math.max(1, page - 1))}
-            disabled={pageNumber <= 1}
-            className="border-[#00B0F0]/20 text-[#00B0F0] hover:bg-[#00B0F0]/5"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm text-[#4A5568]">
-            Page {pageNumber} of {numPages}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setPageNumber(page => Math.min(numPages, page + 1))}
-            disabled={pageNumber >= numPages}
-            className="border-[#00B0F0]/20 text-[#00B0F0] hover:bg-[#00B0F0]/5"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
-  );
+        {numPages > 1 && (
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setPageNumber(page => Math.max(1, page - 1))}
+              disabled={pageNumber <= 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm">
+              Page {pageNumber} of {numPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => setPageNumber(page => Math.min(numPages, page + 1))}
+              disabled={pageNumber >= numPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
