@@ -25,17 +25,22 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
           Download
         </Button>
       </div>
-      <div className="relative aspect-[16/9] w-full rounded-lg border bg-muted">
+      <div className="relative w-full rounded-lg border bg-muted min-h-[600px]">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00B0F0] border-t-transparent"></div>
           </div>
         )}
-        <iframe
-          src={url}
-          className="h-full w-full rounded-lg"
+        <object
+          data={url}
+          type="application/pdf"
+          className="w-full h-full min-h-[600px] rounded-lg"
           onLoad={() => setIsLoading(false)}
-        />
+        >
+          <div className="flex items-center justify-center p-4">
+            <p>Unable to display PDF. <a href={url} className="text-[#00B0F0] hover:underline" target="_blank" rel="noopener noreferrer">Download</a> instead.</p>
+          </div>
+        </object>
       </div>
     </div>
   )
