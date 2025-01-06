@@ -31,16 +31,12 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00B0F0] border-t-transparent"></div>
           </div>
         )}
-        <object
-          data={url}
+        <embed
+          src={url}
           type="application/pdf"
           className="w-full h-full min-h-[600px] rounded-lg"
           onLoad={() => setIsLoading(false)}
-        >
-          <div className="flex items-center justify-center p-4">
-            <p>Unable to display PDF. <a href={url} className="text-[#00B0F0] hover:underline" target="_blank" rel="noopener noreferrer">Download</a> instead.</p>
-          </div>
-        </object>
+        />
       </div>
     </div>
   )
